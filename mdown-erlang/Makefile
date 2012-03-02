@@ -8,6 +8,10 @@ markdown.so: $(OBJECTS)
 
 clean:
 	rm markdown.so
+
+recompile:
+	make clean
+	make
 #%.o: %.c
 #	gcc $(CFLAGS) -c $^ -o $@
 
