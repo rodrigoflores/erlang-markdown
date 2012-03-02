@@ -14,22 +14,14 @@ struct sd_callbacks callbacks;
 struct sd_markdown *markdown;
 struct html_renderopt options;
 
-void * cleanup(void * item) {
-  return NULL;
-}
-
 static ERL_NIF_TERM to_markdown_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  ErlNifBinary markdown_binary, html_binary;
+  ErlNifBinary markdown_binary;
+  ErlNifBinary output_binary;
   struct buf *input, *output;
-  char * output_data;
-  void *alocation;
-  ErlNifResourceType * type = enif_open_resource_type(env, NULL, "mem_resource", cleanup, ERL_NIF_RT_CREATE, NULL);
-
 
   if(!enif_inspect_binary(env, argv[0], &markdown_binary)){
     enif_make_badarg(env);
   }
-
   input = bufnew(markdown_binary.size);
   bufputs(input, markdown_binary.data);
 
@@ -39,14 +31,14 @@ static ERL_NIF_TERM to_markdown_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   markdown = sd_markdown_new(0, 16, &callbacks, &options);
   sd_markdown_render(output, input->data, input->size, markdown);
 
-  output_data = malloc(sizeof(char)*(output->size+5));
-  strcpy(output_data, output->data);
-  alocation = enif_alloc_resource(type, sizeof(char *)*(output->size+5));
+  enif_alloc_binary(sizeof(char)*(output->size), &output_binary);
+  memset(output_binary.data, 0, output->size);
+  strcpy(output_binary.data, output->data); 
 
   bufrelease(input);
   bufrelease(output);
 
-  return enif_make_resource_binary(env, alocation, output->data, output->size);
+  return enif_make_binary(env, &output_binary);
 }
 
 static ErlNifFunc nif_funcs[] =
@@ -55,5 +47,4 @@ static ErlNifFunc nif_funcs[] =
 };
 
 ERL_NIF_INIT(markdown,nif_funcs,NULL,NULL,NULL,NULL);
-
 

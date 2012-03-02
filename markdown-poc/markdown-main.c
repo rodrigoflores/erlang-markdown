@@ -10,7 +10,6 @@ struct sd_callbacks callbacks;
 struct sd_markdown *markdown;
 struct html_renderopt options;
 
-
 #define READ_UNIT 1024
 #define OUTPUT_UNIT 64
 
